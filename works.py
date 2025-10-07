@@ -35,9 +35,6 @@ def start_ldplayer(idx):
     #
     # sleep(12)  # đợi game load
 
-def start_game(idx):
-    run_ldconsole(["launch", "--index", str(idx)])
-
 def worker_instance(idx):
     log_message.logg(f"[LD {idx}] Bắt đầu quản lý instance {idx}")
 
