@@ -143,6 +143,59 @@ def click(target_hwnd, x, y):
     win32gui.SendMessage(target_hwnd, win32con.WM_MOUSEMOVE, win32con.MK_LBUTTON, lparam)
     time.sleep(0.02)
     win32gui.SendMessage(target_hwnd, win32con.WM_LBUTTONUP, 0, lparam)
+
+import time
+import win32gui
+import win32con
+import win32api
+
+def _make_key_lparams(vk):
+    """
+    Trả về (lparam_down, lparam_up) cho WM_KEYDOWN / WM_KEYUP
+    theo virtual-key code vk.
+    """
+    # scan code từ virtual key
+    scan = win32api.MapVirtualKey(vk, 0) & 0xFF
+    # key down: repeat count = 1, scan << 16
+    ldown = 1 | (scan << 16)
+    # key up: set previous-state (bit 30) và transition (bit 31)
+    lup = 1 | (scan << 16) | (1 << 30) | (1 << 31)
+    return ldown, lup
+
+def press_key(target_hwnd, vk_code, use_sendmessage=True, delay=0.03):
+    """
+    Gửi phím (VK) tới target_hwnd.
+    - target_hwnd: HWND mục tiêu (client window)
+    - vk_code: virtual-key code (ví dụ win32con.VK_ESCAPE)
+    - use_sendmessage: nếu True sẽ dùng SendMessage (blocking), mặc định dùng PostMessage (non-blocking)
+    - delay: thời gian giữa down và up (giây)
+    Trả True nếu đã gửi, False nếu lỗi.
+    """
+    if not target_hwnd:
+        raise RuntimeError("target_hwnd chưa set")
+
+    ldown, lup = _make_key_lparams(vk_code)
+
+    try:
+        if use_sendmessage:
+            # blocking
+            win32gui.SendMessage(target_hwnd, win32con.WM_KEYDOWN, vk_code, ldown)
+            time.sleep(delay)
+            win32gui.SendMessage(target_hwnd, win32con.WM_KEYUP, vk_code, lup)
+        else:
+            # non-blocking
+            win32gui.PostMessage(target_hwnd, win32con.WM_KEYDOWN, vk_code, ldown)
+            time.sleep(delay)
+            win32gui.PostMessage(target_hwnd, win32con.WM_KEYUP, vk_code, lup)
+        return True
+    except Exception as e:
+        print("[ERROR] press_key failed:", e)
+        return False
+
+def press_esc(target_hwnd, use_sendmessage=True, delay=0.03):
+    """Nhấn phím Esc lên target_hwnd."""
+    return press_key(target_hwnd, win32con.VK_ESCAPE, use_sendmessage=use_sendmessage, delay=delay)
+
 if __name__ == "__main__":
     test = LdPlayerHelperWinMsg("LDPlayer-1", target="child")
     test.info()

@@ -38,43 +38,53 @@ def start_ldplayer(idx):
 def worker_instance(idx):
     log_message.logg(f"[LD {idx}] Bắt đầu quản lý instance {idx}")
 
-    # 0 - Start LDplayer
-    start_ldplayer(idx)
+    # start_ldplayer(idx)    # 0 - Start LDplayer
+    #
+    hwnd = screenshot.gethwnd(f"LDPlayer-{idx}", target="child")  #get hwnd
+    #
+    # start_game(idx, hwnd)  # 1 - Start game
+    # sleep(1)
+    #
+    # login(idx, hwnd)        # 2 - Login
+    # sleep(1)
 
+    off_ad(idx,hwnd)
+
+    log_message.logg("Hoàn thành công việc")
+
+def start_game(idx, hwnd):
     # 1 - Start game
     log_message.logg(f"[LD {idx}] Đang thao tác mở game")
-    hwnd = screenshot.gethwnd(f"LDPlayer-{idx}")
+    # hwnd = screenshot.gethwnd(f"LDPlayer-{idx}")
     daclick = False
     while True:
-        img = screenshot.screenshot(window_title=f"LDPlayer-{idx}", target="child")
-        found = screenshot.found_image(img,"templates/tpl_20251007_151509.png")
+        img = screenshot.screenshot_window_by_hwnd(hwnd)
+        found, score, rect = screenshot.find_template_on_screen(img, "templates/start_game/tpl_20251007_151509.png")
         if found:
-            screenshot.click_if_found(idx, img,"templates/tpl_20251007_151509.png", hwnd)
+            if rect:
+                x1, y1, x2, y2 = rect
+                cx = (x1 + x2) // 2
+                cy = (y1 + y2) // 2
+                winapiclickandswipe.click(hwnd, cx, cy)
             daclick = True
             time.sleep(1)
         else:
             if daclick:
-                if found:
-                    daclick = False
-                else:
-                    log_message.logg(f"[LD {idx}] Đang đợi mở game")
-                    time.sleep(5)
-                    break
+                # daclick = False
+                log_message.logg(f"[LD {idx}] Đang đợi mở game")
+                time.sleep(5)
+                break
             else:
                 time.sleep(0.5)
 
-    # status = 0
-
+def login(idx, hwnd):
     # 2 - Login
     log_message.logg(f"[LD {idx}] Đang thao tác login game")
+    templates = ("templates/login/tpl_20251007_210223.png", "templates/login/tpl_20251007_210319.png")
     x = 0
     daclick = False
     while True:
-        image = screenshot.screenshot(window_title=f"LDPlayer-{idx}", target="child")
-        templates = ("templates/tpl_20251007_210223.png","templates/tpl_20251007_210319.png")
-        x = x + 1
-        if x == 2:
-            x = 0
+        image = screenshot.screenshot_window_by_hwnd(hwnd)
         found, score, rect = screenshot.find_template_on_screen(image, templates[x])
         if found:
             if rect:
@@ -86,23 +96,36 @@ def worker_instance(idx):
             time.sleep(1)
         else:
             if daclick:
-                if found:
-                    daclick = False
-                elif x==1 and not found:
+                daclick = False
+                if x==1:
                     log_message.logg(f"[LD {idx}] Đang đợi login game")
-                    time.sleep(5)
+                    time.sleep(10)
                     break
+                else:
+                    time.sleep(0.5)
             else:
                 time.sleep(0.5)
+            x = x + 1
+            if x == 2:
+                x = 0
 
-    # found, score, rect = screenshot.find_template_on_screen(image, "templates/tpl_20251007_210223.png")
+def off_ad(idx, hwnd):
+    while True:
+        image = screenshot.screenshot_window_by_hwnd(hwnd)
+        found, score, rect = screenshot.find_template_on_screen(image,
+                                                                "templates/origin/tpl_20251008_165931_button_arrive.png")
+        if found:
+            if rect:
+                x1, y1, x2, y2 = rect
+                cx = (x1 + x2) // 2
+                cy = (y1 + y2) // 2
+                winapiclickandswipe.click(hwnd, cx, cy)
+                time.sleep(1)
+            break
+        else:
+            winapiclickandswipe.press_esc(hwnd)
+            time.sleep(1)
 
-    # image = screenshot.screenshot(window_title=f"LDPlayer-{idx}", target = "child")
-    # match status:
-    #     case 1:
-    #         screenshot.click_if_found(idx, image,"templates/tpl_20251007_151509.png", hwnd)
-    #         break
-    #     case _:
-    #         print("Other")
-
-    log_message.logg("Hoàn thành công việc")
+def auto_trong_cay(idx, hwnd):
+    while True:
+        img = screenshot.screenshot_window_by_hwnd(hwnd)

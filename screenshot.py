@@ -238,14 +238,18 @@ def click_if_found(idx, img, template_path, target_hwnd, threshold=0.98, search_
     return False
 
 if __name__ == "__main__":
-    abcd = gethwnd(window_title="LDPlayer-1", target = "child")
+    # abcd = gethwnd(window_title="LDPlayer-1", target = "child")
     # img = screenshot_window_by_hwnd(abcd)  # img is BGR numpy array or None
-    img = screenshot(window_title="LDPlayer-1", target = "child")
-    # found, score, rect = find_template_on_screen(img, "templates/opengame/tpl1_20251006_210917.png")
-    # print(found)
-    # print(score)
-    # print(rect)
-    click_if_found("1", img, "templates/tpl_20251007_151509.png", abcd)
+    # winapiclickandswipe.press_esc(abcd)
+    x=0
+    while True:
+        abcd = gethwnd(window_title="LDPlayer-1", target = "child")
+        x=x+1
+        # found, score, rect = find_template_on_screen(img, "templates/origin/tpl_20251008_164824_origin0_1.png")
+        print(f"{x} {abcd}")
+        # print(score)
+        # print(rect)
+    # click_if_found("1", img, "templates/start_game/tpl_20251007_151509.png", abcd)
     # if img is not None:
     #     # xử lý với OpenCV
     #     cv2.imshow("snap", img);
