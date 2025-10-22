@@ -39,17 +39,17 @@ def worker_instance(idx):
     log_message.logg(f"[LD {idx}] Bắt đầu quản lý instance {idx}")
 
     # start_ldplayer(idx)    # 0 - Start LDplayer
-    #
+
     hwnd = screenshot.gethwnd(f"LDPlayer-{idx}", target="child")  #get hwnd
-    #
+
     # start_game(idx, hwnd)  # 1 - Start game
     # sleep(1)
     #
     # login(idx, hwnd)        # 2 - Login
     # sleep(1)
-
-    off_ad(idx,hwnd)
-
+    #
+    # off_ad(idx,hwnd)
+    auto_trong_cay(idx,hwnd)
     log_message.logg("Hoàn thành công việc")
 
 def start_game(idx, hwnd):
@@ -59,7 +59,7 @@ def start_game(idx, hwnd):
     daclick = False
     while True:
         img = screenshot.screenshot_window_by_hwnd(hwnd)
-        found, score, rect = screenshot.find_template_on_screen(img, "templates/start_game/tpl_20251007_151509.png")
+        found, score, rect = screenshot.find_template_on_screen(img, "templates/start_game/tpl_20251010_080251game.png")
         if found:
             if rect:
                 x1, y1, x2, y2 = rect
@@ -80,7 +80,7 @@ def start_game(idx, hwnd):
 def login(idx, hwnd):
     # 2 - Login
     log_message.logg(f"[LD {idx}] Đang thao tác login game")
-    templates = ("templates/login/tpl_20251007_210223.png", "templates/login/tpl_20251007_210319.png")
+    templates = ("templates/login/tpl_20251010_081109taikhoan.png", "templates/login/tpl_20251010_081150game.png")
     x = 0
     daclick = False
     while True:
@@ -99,7 +99,7 @@ def login(idx, hwnd):
                 daclick = False
                 if x==1:
                     log_message.logg(f"[LD {idx}] Đang đợi login game")
-                    time.sleep(10)
+                    time.sleep(15)
                     break
                 else:
                     time.sleep(0.5)
@@ -110,22 +110,92 @@ def login(idx, hwnd):
                 x = 0
 
 def off_ad(idx, hwnd):
+    daclick = False
     while True:
         image = screenshot.screenshot_window_by_hwnd(hwnd)
         found, score, rect = screenshot.find_template_on_screen(image,
-                                                                "templates/origin/tpl_20251008_165931_button_arrive.png")
+                                                                "templates/origin/tpl_20251010_082554buttonarrive.png")
         if found:
             if rect:
                 x1, y1, x2, y2 = rect
                 cx = (x1 + x2) // 2
                 cy = (y1 + y2) // 2
                 winapiclickandswipe.click(hwnd, cx, cy)
+                daclick = True
                 time.sleep(1)
-            break
         else:
-            winapiclickandswipe.press_esc(hwnd)
-            time.sleep(1)
+            if daclick:
+                break
+            else:
+                winapiclickandswipe.press_esc(hwnd)
+                time.sleep(1)
 
 def auto_trong_cay(idx, hwnd):
+    templates = ("templates/origin/tpl_20251010_082415origin1.png",
+                 "templates/autotrongcay/tpl_20251010_091551tang1.png")
+    x = 0
     while True:
-        img = screenshot.screenshot_window_by_hwnd(hwnd)
+
+        image = screenshot.screenshot_window_by_hwnd(hwnd)
+        found, score, rect = screenshot.find_template_on_screen(image, templates[x])
+        match x:
+            case 0:
+                if found:
+                    winapiclickandswipe.swipe_multi(hwnd, [(770, 230), (770, 450)], duration=800, step=20)
+                    time.sleep(1)
+            case 1:
+                if found:
+                    daxuli = xuli1(idx, hwnd)
+                    time.sleep(1)
+                print("ok")
+
+            case _:
+                time.sleep(0.5)
+                print("ko thay origin")  # default
+        x = x + 1
+        if x == 2:
+            x = 0
+
+def xuli1(idx, hwnd):           # autotrongcay
+    templates = ("templates/xuli1/tpl_20251010_095702.png",
+                 "templates/xuli1/tpl_20251010_140819.png",
+                 "templates/xuli1/tpl_20251010_141221.png")
+    x = 0
+    da_gieo_hat_hoac_thu_hoach = False
+    while True:
+        image = screenshot.screenshot_window_by_hwnd(hwnd)
+        found, score, rect = screenshot.find_template_on_screen(image, templates[x])
+        match x:
+            case 0: #----------gieo hạt---------
+                if found:
+                    found, score, rect = screenshot.find_template_on_screen(image, templates[2])
+                    if found:
+                        if rect:
+                            x1, y1, x2, y2 = rect
+                            cx = (x1 + x2) // 2
+                            cy = (y1 + y2) // 2
+                            winapiclickandswipe.swipe_multi(hwnd, [(cx, cy), (300, 740), (370, 740)], duration=800, step=20)
+                            da_gieo_hat_hoac_thu_hoach = True
+                            time.sleep(1)
+                            break
+            case 1: #------------thu hoạch---------
+                if found:
+                    if rect:
+                        x1, y1, x2, y2 = rect
+                        cx = (x1 + x2) // 2
+                        cy = (y1 + y2) // 2
+                        winapiclickandswipe.swipe_multi(hwnd, [(cx, cy), (300, 740), (650, 740)], duration=800, step=20)
+                        daclick = True
+                        time.sleep(1)
+                        break
+            case _:
+                winapiclickandswipe.click(hwnd, 720, 450)
+                time.sleep(1)
+                winapiclickandswipe.click(hwnd, 300, 740)
+                time.sleep(1)
+                break
+        x = x + 1
+        if x == 3:
+            x = 0
+    return True
+import GUI

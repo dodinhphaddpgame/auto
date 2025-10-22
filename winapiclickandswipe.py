@@ -144,10 +144,29 @@ def click(target_hwnd, x, y):
     time.sleep(0.02)
     win32gui.SendMessage(target_hwnd, win32con.WM_LBUTTONUP, 0, lparam)
 
-import time
-import win32gui
-import win32con
-import win32api
+def swipe_multi(target_hwnd, points, duration=800, step=20):
+    if not target_hwnd:
+        raise RuntimeError("target_hwnd chưa set")
+    if not points or len(points) < 2:
+        print("[WARN] swipe_multi cần >= 2 điểm")
+        return
+    total_segments = len(points) - 1
+    delay = max(0.001, duration / (step * total_segments) / 1000.0)
+    x0, y0 = points[0]
+    win32gui.SendMessage(target_hwnd, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, _lparam(x0, y0))
+    time.sleep(0.005)
+    for seg in range(total_segments):
+        x1, y1 = points[seg]
+        x2, y2 = points[seg + 1]
+        dx = (x2 - x1) / step
+        dy = (y2 - y1) / step
+        for i in range(1, step + 1):
+            xi = int(x1 + dx * i); yi = int(y1 + dy * i)
+            win32gui.SendMessage(target_hwnd, win32con.WM_MOUSEMOVE, win32con.MK_LBUTTON,_lparam(xi, yi))
+            time.sleep(delay)
+    x_end, y_end = points[-1]
+    win32gui.SendMessage(target_hwnd, win32con.WM_LBUTTONUP, 0,_lparam(x_end, y_end))
+
 
 def _make_key_lparams(vk):
     """
@@ -200,5 +219,7 @@ if __name__ == "__main__":
     test = LdPlayerHelperWinMsg("LDPlayer-1", target="child")
     test.info()
     # test.click(492,140)         # client coords của RenderWindow
-    test.click(328, 93)
-    # test.swipe(100,100,400,400)
+    # test.click(305, 741)
+
+    # test.swipe(635, 100, 770, 450)
+    test.swipe_multi([(770,230),(770,450)])
