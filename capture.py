@@ -311,5 +311,5 @@ def gethwnd(window_title, target="child"):
 
 if __name__ == "__main__":
     # chỉnh tên cửa sổ cho phù hợp, ví dụ "LDPlayer" hoặc một phần tiêu đề
-    demo("LDPlayer")
+    demo("LDPlayer-ori-3")
     # img_bgr = cv2.cvtColor(arr, cv2.COLOR_BGRA2BGR)

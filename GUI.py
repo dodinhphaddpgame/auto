@@ -50,12 +50,12 @@ frame_range.pack(pady=10)
 tk.Label(frame_range, text="Start index:").grid(row=0, column=0, padx=5)
 entry_start = tk.Entry(frame_range, width=5)
 entry_start.grid(row=0, column=1, padx=5)
-entry_start.insert(0, "1")
+entry_start.insert(0, "3")
 
 tk.Label(frame_range, text="End index:").grid(row=0, column=2, padx=5)
 entry_end = tk.Entry(frame_range, width=5)
 entry_end.grid(row=0, column=3, padx=5)
-entry_end.insert(0, "1")
+entry_end.insert(0, "3")
 
 open_button = tk.Button(frame_range, text="Open Tabs", font=("Arial", 12), bg="blue", fg="white",
                         command=lambda: threading.Thread(target=open_tabs, daemon=True).start())

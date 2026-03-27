@@ -210,7 +210,7 @@ def capture_screenshot_img_2(idx):
 def get_new_account():
     global account_counter
     with account_lock:
-        acc_name = f"phapha{account_counter}"
+        acc_name = f"concacvippro{account_counter}"
         account_counter += 1
     return acc_name
 
@@ -268,11 +268,11 @@ def autotrongcay(idx):
 
 def worker_instance(idx):
     log(f"[LD {idx}] Bắt đầu quản lý instance...")
-    account_name = get_new_account()
-    log(f"[LD {idx}] Gán account: {account_name}")
-    #login(idx)
+    # account_name = get_new_account()
+    # log(f"[LD {idx}] Gán account: {account_name}")
+    login(idx)
     sleep(0.2)
-    autotrongcay(idx)
+    # autotrongcay(idx)
     sleep(0.2)
     # run_ldconsole([
     #     "adb", "--index", str(idx),
@@ -293,8 +293,8 @@ def worker_instance(idx):
     # sleep(1)
     # click_if_found(idx, template_path="regions/login/login_5_20250904_144633.png")
 
-    save_account_done(account_name)
-    log(f"[LD {idx}] Hoàn thành công việc với {account_name}, đã lưu vào file.")
+    # save_account_done(account_name)
+    # log(f"[LD {idx}] Hoàn thành công việc với {account_name}, đã lưu vào file.")
 
 
 def click(idx,toadoclick):

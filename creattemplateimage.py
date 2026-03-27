@@ -173,7 +173,7 @@ def make_templates_from_image(image: np.ndarray, templates_dir: str = "templates
 
 if __name__ == "__main__":
     # img = d.capture_window_by_hwnd(c.gethwnd("LDPlayer-4", target = "child"))
-    img = screenshot.screenshot(window_title="LDPlayer-1", target="child")
+    img = screenshot.screenshot(window_title="LDPlayer-ori-3", target="child")
     # img = cv2.imread("templates/tpl_20251010_141826.png") # or your capture function result
     saved = make_templates_from_image(img)
     print("Saved templates:", saved)
