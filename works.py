@@ -40,16 +40,16 @@ def worker_instance(idx):
 
     # start_ldplayer(idx)    # 0 - Start LDplayer
 
+    # hwnd = screenshot.gethwnd(f"LDPlayer-{idx}", target="child")  #get hwnd
     hwnd = screenshot.gethwnd(f"LDPlayer-{idx}", target="child")  #get hwnd
-
-    # start_game(idx, hwnd)  # 1 - Start game
+    start_game(idx, hwnd)  # 1 - Start game
     # sleep(1)
     #
-    # login(idx, hwnd)        # 2 - Login
+    # 2_login(idx, hwnd)        # 2 - Login
     # sleep(1)
     #
     # off_ad(idx,hwnd)
-    auto_trong_cay(idx,hwnd)
+    # auto_trong_cay(idx,hwnd)
     log_message.logg("Hoàn thành công việc")
 
 def start_game(idx, hwnd):
@@ -59,7 +59,7 @@ def start_game(idx, hwnd):
     daclick = False
     while True:
         img = screenshot.screenshot_window_by_hwnd(hwnd)
-        found, score, rect = screenshot.find_template_on_screen(img, "templates/start_game/tpl_20251010_080251game.png")
+        found, score, rect = screenshot.find_template_on_screen(img, "templates/1_startgame/1.png")
         if found:
             if rect:
                 x1, y1, x2, y2 = rect
@@ -77,10 +77,21 @@ def start_game(idx, hwnd):
             else:
                 time.sleep(0.5)
 
+def openbangnhiemvu(hwnd):
+    image = screenshot.screenshot_window_by_hwnd(hwnd)
+    # found, score, rect = screenshot.find_template_on_screen(image, templates[x])
+    if screenshot.found_image_with_region(image, "templates/3_openbangnhiemvu/1.png",threshold=0.99):
+        print("ok")
+    elif screenshot.found_image_with_region(image, "templates/3_openbangnhiemvu/2.png",threshold=0.99):
+
+    elif screenshot.found_image_with_region(image, "templates/3_openbangnhiemvu/3.png", threshold=0.99):
+
+    print("s")
+
 def login(idx, hwnd):
     # 2 - Login
-    log_message.logg(f"[LD {idx}] Đang thao tác login game")
-    templates = ("templates/login/tpl_20251010_081109taikhoan.png", "templates/login/tpl_20251010_081150game.png")
+    log_message.logg(f"[LD {idx}] Đang thao tác 2_login game")
+    templates = ("templates/2_login/tpl_20251010_081109taikhoan.png", "templates/2_login/tpl_20251010_081150game.png")
     x = 0
     daclick = False
     while True:
@@ -98,7 +109,7 @@ def login(idx, hwnd):
             if daclick:
                 daclick = False
                 if x==1:
-                    log_message.logg(f"[LD {idx}] Đang đợi login game")
+                    log_message.logg(f"[LD {idx}] Đang đợi 2_login game")
                     time.sleep(15)
                     break
                 else:

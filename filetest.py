@@ -236,10 +236,10 @@ def login(idx):
     log(f"[LD {idx}] Đã mở game {GAME_PACKAGE}")
 
     sleep(12)  # đợi game load
-    click_if_found_until_gone(idx, template_path="regions/login/login_1_20250916_185037.png")
+    click_if_found_until_gone(idx, template_path="regions/2_login/login_1_20250916_185037.png")
 
     sleep(1)
-    click_if_found_until_gone(idx, template_path="regions/login/login_2_20250916_185057.png")
+    click_if_found_until_gone(idx, template_path="regions/2_login/login_2_20250916_185057.png")
     sleep(5)
 
 def kiemtragoc(idx):
@@ -291,7 +291,7 @@ def worker_instance(idx):
     # ])
     #
     # sleep(1)
-    # click_if_found(idx, template_path="regions/login/login_5_20250904_144633.png")
+    # click_if_found(idx, template_path="regions/2_login/login_5_20250904_144633.png")
 
     # save_account_done(account_name)
     # log(f"[LD {idx}] Hoàn thành công việc với {account_name}, đã lưu vào file.")

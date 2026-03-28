@@ -1,6 +1,6 @@
 import ctypes
 import os
-
+import json
 import win32gui, win32ui, win32con
 import numpy as np
 import cv2
@@ -165,7 +165,7 @@ def screenshot(window_title, target):
     # image = screenshot_window_by_hwnd(gethwnd(window_title=window_title, target=target))  # img is BGR numpy array or None
     return screenshot_window_by_hwnd(gethwnd(window_title=window_title, target=target))
 
-def find_template_on_screen(image, template_path, threshold=0.98, search_region=None):
+def find_template_on_screen(image, template_path, threshold=0.99, search_region=None):
     """
     Chụp màn từ LDPlayer idx, tìm template_path.
     Trả về (found, max_val, rect) where rect=(x1,y1,x2,y2) in screen coords.
@@ -213,7 +213,77 @@ def find_template_on_screen(image, template_path, threshold=0.98, search_region=
         log_message.logg(f"Lỗi khi match template {os.path.basename(template_path)}: {e}")
         return (False, 0.0, None)
 
-def found_image(image, template_path, threshold=0.98, search_region=None):
+def expand_region(roi, pad, img_shape):
+    x1, y1, x2, y2 = roi
+    h, w = img_shape[:2]
+
+    x1 = max(0, x1 - pad)
+    y1 = max(0, y1 - pad)
+    x2 = min(w, x2 + pad)
+    y2 = min(h, y2 + pad)
+
+    return (x1, y1, x2, y2)
+
+def find_template_with_region_on_screen(image, template_path, threshold=0.99):
+    """
+    Chụp màn từ LDPlayer idx, tìm template_path.
+    Trả về (found, max_val, rect) where rect=(x1,y1,x2,y2) in screen coords.
+    """
+
+    json_path = os.path.splitext(template_path)[0] + ".json"
+    roi_json = json.load(open(json_path))
+    roi = (roi_json["x1"], roi_json["y1"],
+           roi_json["x2"], roi_json["y2"])
+    region = expand_region(roi, pad=5, img_shape=image.shape)
+
+    if image is None:
+        log_message.logg("Không chụp được ảnh để dò template.")
+        return (False, 0.0, None)
+
+    search_img = image
+    offset_x = offset_y = 0
+    if region:
+        x1, y1, x2, y2 = map(int, region)
+        # clamp
+        x1 = max(0, min(search_img.shape[1]-1, x1))
+        x2 = max(0, min(search_img.shape[1], x2))
+        y1 = max(0, min(search_img.shape[0]-1, y1))
+        y2 = max(0, min(search_img.shape[0], y2))
+        if x2 <= x1 or y2 <= y1:
+            log_message.logg("search_region không hợp lệ: {search_region}")
+            return (False, 0.0, None)
+        search_img = image[y1:y2, x1:x2]
+        offset_x, offset_y = x1, y1
+
+    tpl = cv2.imread(template_path, cv2.IMREAD_COLOR)
+    if tpl is None:
+        log_message.logg(f"Không đọc được template: {template_path}")
+        return (False, 0.0, None)
+
+    if tpl.shape[0] > search_img.shape[0] or tpl.shape[1] > search_img.shape[1]:
+        # template to hơn vùng tìm -> skip
+        return (False, 0.0, None)
+
+    try:
+        res = cv2.matchTemplate(search_img, tpl, cv2.TM_CCOEFF_NORMED)
+        _, max_val, _, max_loc = cv2.minMaxLoc(res)
+        top_left = max_loc
+        h, w = tpl.shape[:2]
+        x1m = int(top_left[0] + offset_x)
+        y1m = int(top_left[1] + offset_y)
+        x2m = x1m + w
+        y2m = y1m + h
+        found = (max_val >= threshold)
+        return (found, float(max_val), (x1m, y1m, x2m, y2m))
+    except Exception as e:
+        log_message.logg(f"Lỗi khi match template {os.path.basename(template_path)}: {e}")
+        return (False, 0.0, None)
+
+def found_image_with_region(image, template_path, threshold=0.99, search_region=None):
+    found, score, rect = find_template_with_region_on_screen(image, template_path, threshold, search_region)
+    return found
+
+def found_image(image, template_path, threshold=0.99, search_region=None):
     found, score, rect = find_template_on_screen(image, template_path, threshold, search_region)
     return found
 
@@ -238,7 +308,7 @@ def click_if_found(idx, img, template_path, target_hwnd, threshold=0.98, search_
     return False
 
 if __name__ == "__main__":
-    abcd = gethwnd(window_title="LDPlayer-1", target = "child")
+    abcd = gethwnd(window_title="LDPlayer-3", target = "child")
     # img = screenshot_window_by_hwnd(abcd)  # img is BGR numpy array or None
     # winapiclickandswipe.press_esc(abcd)
     # found, score, rect = find_template_on_screen(img, "templates/start_game/tpl_20251010_080251game.png")
