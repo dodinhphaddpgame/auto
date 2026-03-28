@@ -224,7 +224,7 @@ def expand_region(roi, pad, img_shape):
 
     return (x1, y1, x2, y2)
 
-def find_template_with_region_on_screen(image, template_path, threshold=0.99):
+def find_template_on_screen_with_region(image, template_path, threshold=0.99):
     """
     Chụp màn từ LDPlayer idx, tìm template_path.
     Trả về (found, max_val, rect) where rect=(x1,y1,x2,y2) in screen coords.
@@ -279,19 +279,42 @@ def find_template_with_region_on_screen(image, template_path, threshold=0.99):
         log_message.logg(f"Lỗi khi match template {os.path.basename(template_path)}: {e}")
         return (False, 0.0, None)
 
-def found_image_with_region(image, template_path, threshold=0.99, search_region=None):
-    found, score, rect = find_template_with_region_on_screen(image, template_path, threshold, search_region)
+def found_image_with_region(idx, img, template_path, target_hwnd, threshold=0.99):
+    found, score, rect = find_template_on_screen_with_region(img, template_path, threshold)
+    print(found)
+    if not found:
+        log_message.logg(f"[LD {idx}] Không tìm thấy {template_path} (score={score:.3f})")
     return found
 
 def found_image(image, template_path, threshold=0.99, search_region=None):
     found, score, rect = find_template_on_screen(image, template_path, threshold, search_region)
     return found
 
-def click_if_found(idx, img, template_path, target_hwnd, threshold=0.98, search_region=None):
+def click_if_found(idx, img, template_path, target_hwnd, threshold=0.99, search_region=None):
     """
     Nếu template xuất hiện thì tap vào giữa template đó.
     """
     found, score, rect = find_template_on_screen(img, template_path, threshold, search_region)
+    if found and rect:
+        x1, y1, x2, y2 = rect
+        cx = (x1 + x2) // 2
+        cy = (y1 + y2) // 2
+        try:
+            # abc = winapiclickandswipe.LdPlayerHelperWinMsg(f"LDPlayer-{idx}", target="child")
+            # abc.click(cx,cy)
+            winapiclickandswipe.click(target_hwnd ,cx,cy)
+            return True
+        except Exception as e:
+            log_message.logg(f"[LD {idx}] Lỗi khi click: {e}")
+    else:
+        log_message.logg(f"[LD {idx}] Không tìm thấy {template_path} (score={score:.3f})")
+    return False
+
+def click_if_found_with_region(idx, img, template_path, target_hwnd, threshold=0.99):
+    """
+    Nếu template xuất hiện thì tap vào giữa template đó.
+    """
+    found, score, rect = find_template_on_screen_with_region(img, template_path, threshold)
     if found and rect:
         x1, y1, x2, y2 = rect
         cx = (x1 + x2) // 2

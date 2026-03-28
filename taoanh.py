@@ -8,12 +8,12 @@ from tkinter import ttk, simpledialog
 from PIL import Image, ImageTk
 import screenshot
 
-TEMPLATES_DIR = "templates"
+TEMPLATES_DIR = "templatesnhiemvu"
 os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
 
 class App:
-    def __init__(self, root, image: np.ndarray):
+    def __init__(self, root, image: np.ndarray, window_title):
         self.root = root
         self.root.title("Template Maker - One Window")
 
@@ -139,7 +139,7 @@ class App:
 
     def refresh_image(self):
         # chụp lại màn
-        new_img = screenshot.screenshot(window_title="LDPlayer-3", target="child")
+        new_img = screenshot.screenshot(window_title, target="child")
         if new_img is None:
             self.log("Screenshot failed.")
             return
@@ -157,8 +157,9 @@ class App:
         self.log("Image refreshed.")
 
 # ===== MAIN =====
-img = screenshot.screenshot(window_title="LDPlayer-3", target="child")
+window_title = "LDPlayer-acc_chinh"
+img = screenshot.screenshot(window_title, target="child")
 
 root = tk.Tk()
-app = App(root, img)
+app = App(root, img, window_title)
 root.mainloop()

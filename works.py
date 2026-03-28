@@ -40,16 +40,12 @@ def worker_instance(idx):
 
     # start_ldplayer(idx)    # 0 - Start LDplayer
 
-    # hwnd = screenshot.gethwnd(f"LDPlayer-{idx}", target="child")  #get hwnd
     hwnd = screenshot.gethwnd(f"LDPlayer-{idx}", target="child")  #get hwnd
-    start_game(idx, hwnd)  # 1 - Start game
-    # sleep(1)
-    #
-    # 2_login(idx, hwnd)        # 2 - Login
-    # sleep(1)
-    #
-    # off_ad(idx,hwnd)
-    # auto_trong_cay(idx,hwnd)
+
+    # start_game(idx, hwnd)  # 1 - Start game
+
+    openbangnhiemvu(idx, hwnd)
+
     log_message.logg("Hoàn thành công việc")
 
 def start_game(idx, hwnd):
@@ -77,16 +73,16 @@ def start_game(idx, hwnd):
             else:
                 time.sleep(0.5)
 
-def openbangnhiemvu(hwnd):
-    image = screenshot.screenshot_window_by_hwnd(hwnd)
-    # found, score, rect = screenshot.find_template_on_screen(image, templates[x])
-    if screenshot.found_image_with_region(image, "templates/3_openbangnhiemvu/1.png",threshold=0.99):
-        print("ok")
-    elif screenshot.found_image_with_region(image, "templates/3_openbangnhiemvu/2.png",threshold=0.99):
-
-    elif screenshot.found_image_with_region(image, "templates/3_openbangnhiemvu/3.png", threshold=0.99):
-
-    print("s")
+def openbangnhiemvu(idx,hwnd):
+    while True:
+        img = screenshot.screenshot_window_by_hwnd(hwnd)
+        if screenshot.click_if_found_with_region(idx,img,"templates/3_openbangnhiemvu/2.png",hwnd):
+            sleep(1)
+        if screenshot.click_if_found_with_region(idx,img,"templates/3_openbangnhiemvu/3.png",hwnd):
+            sleep(1)
+        if screenshot.found_image_with_region(idx, img,"templates/3_openbangnhiemvu/1.png",hwnd):
+            break
+        sleep(1)
 
 def login(idx, hwnd):
     # 2 - Login
