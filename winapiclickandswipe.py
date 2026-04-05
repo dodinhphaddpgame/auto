@@ -211,9 +211,62 @@ def press_key(target_hwnd, vk_code, use_sendmessage=True, delay=0.03):
         print("[ERROR] press_key failed:", e)
         return False
 
-def press_esc(target_hwnd, use_sendmessage=True, delay=0.03):
+def press_esc(idx, use_sendmessage=True, delay=0.03):
     """Nhấn phím Esc lên target_hwnd."""
-    return press_key(target_hwnd, win32con.VK_ESCAPE, use_sendmessage=use_sendmessage, delay=delay)
+    hwnd = gethwnd(f"LDPlayer-{idx}", target="child")
+    return press_key(hwnd, win32con.VK_ESCAPE, use_sendmessage=use_sendmessage, delay=delay)
+
+def press_f1(idx, use_sendmessage=True, delay=0.03):
+    """Nhấn phím Esc lên target_hwnd."""
+    hwnd = gethwnd(f"LDPlayer-{idx}", target="child")
+    return press_key(hwnd, win32con.VK_F1, use_sendmessage=use_sendmessage, delay=delay)
+
+def gethwnd(window_title, target="child"):
+    """
+    window_title: substring của title (ví dụ "LDPlayer-4")
+    target: "child" để gửi tới RenderWindow (mặc định), "parent" để gửi tới cửa sổ cha
+    """
+    parent_hwnd = None
+    child_hwnd = None
+
+    # tìm parent window (top-level) chứa window_title
+    def enum_windows_proc(hwnd, _):
+        nonlocal parent_hwnd, child_hwnd
+        try:
+            if win32gui.IsWindowVisible(hwnd):
+                title = win32gui.GetWindowText(hwnd) or ""
+                if window_title.lower() in title.lower():
+                    parent_hwnd = hwnd
+
+                    # tìm child RenderWindow bên trong parent
+                    def enum_child_proc(chwnd, _2):
+                        nonlocal child_hwnd
+                        try:
+                            cls = (win32gui.GetClassName(chwnd) or "").lower()
+                            if "renderwindow" in cls:
+                                child_hwnd = chwnd
+                        except Exception:
+                            pass
+
+                    win32gui.EnumChildWindows(hwnd, enum_child_proc, None)
+        except Exception:
+            pass
+
+    win32gui.EnumWindows(enum_windows_proc, None)
+
+    if not parent_hwnd and not child_hwnd:
+        raise Exception(f"Không tìm thấy cửa sổ chứa: '{window_title}'")
+
+    # chọn target theo mode
+    if target == "child":
+        if not child_hwnd:
+            raise Exception(f"Không tìm thấy RenderWindow trong cửa sổ chứa: '{window_title}'")
+        return child_hwnd
+    else:  # target == "parent"
+        if not parent_hwnd:
+            raise Exception(f"Không tìm thấy parent window chứa: '{window_title}'")
+        return parent_hwnd
+
 
 if __name__ == "__main__":
     test = LdPlayerHelperWinMsg("LDPlayer-1", target="child")

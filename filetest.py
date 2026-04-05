@@ -236,20 +236,20 @@ def login(idx):
     log(f"[LD {idx}] Đã mở game {GAME_PACKAGE}")
 
     sleep(12)  # đợi game load
-    click_if_found_until_gone(idx, template_path="regions/2_login/login_1_20250916_185037.png")
+    click_if_found_until_gone(idx, template_path="regions/2_home/login_1_20250916_185037.png")
 
     sleep(1)
-    click_if_found_until_gone(idx, template_path="regions/2_login/login_2_20250916_185057.png")
+    click_if_found_until_gone(idx, template_path="regions/2_home/login_2_20250916_185057.png")
     sleep(5)
 
 def kiemtragoc(idx):
-    if found_image(idx, template_path="regions/kiemtragoc/1.png"):
+    if found_image(idx, template_path="regions/kiemtragoc/2.png"):
         return True
     else :
         return False
 
 def autotrongcay(idx):
-    if found_image(idx, template_path="regions/kiemtragoc/2.png", search_region=(663, 540, 740, 597)):
+    if found_image(idx, template_path="regions/kiemtragoc/5.png", search_region=(663, 540, 740, 597)):
         sleep(0.2)
         click(idx,toadoclick=(298, 738))
         sleep(0.2)
@@ -291,7 +291,7 @@ def worker_instance(idx):
     # ])
     #
     # sleep(1)
-    # click_if_found(idx, template_path="regions/2_login/login_5_20250904_144633.png")
+    # click_if_found(idx, template_path="regions/2_home/login_5_20250904_144633.png")
 
     # save_account_done(account_name)
     # log(f"[LD {idx}] Hoàn thành công việc với {account_name}, đã lưu vào file.")

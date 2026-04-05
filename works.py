@@ -44,8 +44,9 @@ def worker_instance(idx):
 
     # start_game(idx, hwnd)  # 1 - Start game
 
-    openbangnhiemvu(idx, hwnd)
-
+    # openbangnhiemvu(idx, hwnd)
+    # lamnhiemvu(idx, hwnd)
+    #
     log_message.logg("Hoàn thành công việc")
 
 def start_game(idx, hwnd):
@@ -80,14 +81,49 @@ def openbangnhiemvu(idx,hwnd):
             sleep(1)
         if screenshot.click_if_found_with_region(idx,img,"templates/3_openbangnhiemvu/3.png",hwnd):
             sleep(1)
-        if screenshot.found_image_with_region(idx, img,"templates/3_openbangnhiemvu/1.png",hwnd):
+        if screenshot.found_image_with_region(idx, img,"templates/3_openbangnhiemvu/1.png"):
             break
+        sleep(1)
+
+def lamnhiemvu(idx,hwnd):
+    nhanquanhiemvu(idx, hwnd)
+    print("")
+
+def nhanquanhiemvu(idx,hwnd):
+    sovongchuaclick = 0
+    while True:
+        img = screenshot.screenshot_window_by_hwnd(hwnd)
+        if screenshot.click_if_found_with_region(idx,img,"templates/5_nhanquanhiemvu/1.png",hwnd):
+            sovongchuaclick = 0
+            sleep(1)
+        if screenshot.click_if_found_with_region(idx, img, "templates/5_nhanquanhiemvu/2.png", hwnd):
+            sovongchuaclick = 0
+            sleep(1)
+        if screenshot.click_if_found_with_region(idx, img, "templates/5_nhanquanhiemvu/3.png", hwnd):
+            sovongchuaclick = 0
+            sleep(1)
+        if screenshot.click_if_found_with_region(idx,img,"templates/5_nhanquanhiemvu/4.png",hwnd):
+            sovongchuaclick = 0
+            sleep(1)
+        if screenshot.click_if_found_with_region(idx, img, "templates/5_nhanquanhiemvu/5.png", hwnd):
+            sovongchuaclick = 0
+            sleep(1)
+        if screenshot.click_if_found_with_region(idx, img, "templates/5_nhanquanhiemvu/6.png", hwnd):
+            sovongchuaclick = 0
+            sleep(1)
+        if screenshot.click_if_found_with_region(idx, img, "templates/5_nhanquanhiemvu/7.png", hwnd):
+            sovongchuaclick = 0
+            sleep(1)
+        if sovongchuaclick == 6:
+            break
+        else:
+            sovongchuaclick +=1
         sleep(1)
 
 def login(idx, hwnd):
     # 2 - Login
-    log_message.logg(f"[LD {idx}] Đang thao tác 2_login game")
-    templates = ("templates/2_login/tpl_20251010_081109taikhoan.png", "templates/2_login/tpl_20251010_081150game.png")
+    log_message.logg(f"[LD {idx}] Đang thao tác 2_home game")
+    templates = ("templates/2_home/tpl_20251010_081109taikhoan.png", "templates/2_home/tpl_20251010_081150game.png")
     x = 0
     daclick = False
     while True:
@@ -105,7 +141,7 @@ def login(idx, hwnd):
             if daclick:
                 daclick = False
                 if x==1:
-                    log_message.logg(f"[LD {idx}] Đang đợi 2_login game")
+                    log_message.logg(f"[LD {idx}] Đang đợi 2_home game")
                     time.sleep(15)
                     break
                 else:

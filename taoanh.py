@@ -8,7 +8,7 @@ from tkinter import ttk, simpledialog
 from PIL import Image, ImageTk
 import screenshot
 
-TEMPLATES_DIR = "templatesnhiemvu"
+TEMPLATES_DIR = "templates2"
 os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
 
@@ -139,7 +139,7 @@ class App:
 
     def refresh_image(self):
         # chụp lại màn
-        new_img = screenshot.screenshot(window_title, target="child")
+        new_img = screenshot.screenshot(3)
         if new_img is None:
             self.log("Screenshot failed.")
             return
@@ -157,8 +157,8 @@ class App:
         self.log("Image refreshed.")
 
 # ===== MAIN =====
-window_title = "LDPlayer-acc_chinh"
-img = screenshot.screenshot(window_title, target="child")
+window_title = "LDPlayer-3"
+img = screenshot.screenshot(3)
 
 root = tk.Tk()
 app = App(root, img, window_title)

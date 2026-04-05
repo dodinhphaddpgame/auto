@@ -1,84 +1,231 @@
-import os
-import json
-import cv2
+import time
 import screenshot
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TEMPLATE_ROOT = os.path.join(BASE_DIR, "templatesnhiemvu")
+import winapiclickandswipe
 
 
-def load_roi(path):
-    j = json.load(open(path))
-    return j["x1"], j["y1"], j["x2"], j["y2"]
+TEMPLATES = {
+    "map_anchor": "images/map_anchor.png",
+    "login_screen_1": "templates/2_home/2.png",
+    "login_screen_2": "templates/2_home/2.png",
+    "login_screen_3": "templates/2_home/3.png",
+    "startgame1": "templates/1_startgame/1.png",
+    "startgame2": "templates/1_startgame/2.png",
+    "openbangnhiemvu1": "templates/3_openbangnhiemvu/1.png",
+    "openbangnhiemvu2": "templates/3_openbangnhiemvu/2.png",
+    "openbangnhiemvu3": "templates/3_openbangnhiemvu/3.png",
+    "openbangnhiemvu4": "templates/3_openbangnhiemvu/4.png",
+
+    "login_button": "images/login_button.png",
+    "quest_panel_anchor": "images/quest_panel_anchor.png",
+    "quest_icon": "images/quest_icon.png",
+    "claim_button": "images/claim_button.png",
+    "complete_text": "images/complete_text.png",
+    "game_icon": "images/game_icon.png",
+    "go_button": "images/go_button.png",
+    "text_talk": "images/text_talk.png",
+    "text_fight": "images/text_fight.png",
+    "text_collect": "images/text_collect.png",
+    "text_move": "images/text_move.png",
+}
+
+DEFAULT_THRESHOLD = 0.99
+
+# =========================
+# Primitive
+# =========================
+
+def get_screen_image(idx):
+    return screenshot.screenshot(idx)
+
+def get_screen_image2(idx):
+    return screenshot.screenshot2(idx)
 
 
-def get_next_index(folder):
-    used = set()
-    for f in os.listdir(folder):
-        name, ext = os.path.splitext(f)
-        if name.isdigit():
-            used.add(int(name))
-    i = 1
-    while i in used:
-        i += 1
-    return i
+def see(idx, img, name, threshold=DEFAULT_THRESHOLD):
+    template_path = TEMPLATES[name]
+    return screenshot.found_image_with_region(idx, img, template_path, threshold)
+
+def click(idx, img, name, threshold=DEFAULT_THRESHOLD):
+    template_path = TEMPLATES[name]
+    return screenshot.click_if_found_with_region(idx, img, template_path, threshold)
+    # print(f"[CLICK] {name}")
+
+def press_back(idx):
+    winapiclickandswipe.press_esc(idx)
+    print("[ACTION] press_back")
+
+def press_f1(idx):
+    winapiclickandswipe.press_f1(idx)
+    print("[ACTION] press_f1")
+
+def sleep(sec=0.5):
+    time.sleep(sec)
 
 
-def match_in_group(roi_img, group_path, threshold=0.98):
-    for f in os.listdir(group_path):
-        if not f.endswith(".png"):
-            continue
+# =========================
+# Check functions
+# =========================
 
-        tpl = cv2.imread(os.path.join(group_path, f))
-        if tpl is None or tpl.shape != roi_img.shape:
-            continue
-
-        res = cv2.matchTemplate(roi_img, tpl, cv2.TM_CCOEFF_NORMED)
-        _, max_val, _, _ = cv2.minMaxLoc(res)
-
-        if max_val >= threshold:
-            return True, f, max_val
-
-    return False, None, 0.0
+def game_is_running(idx, img):
+    return see(idx, img, "startgame2")
 
 
-# ===== MAIN =====
-screen = screenshot.screenshot(window_title="LDPlayer-acc_chinh", target="child")
+def in_map(idx, img):
+    return see(idx, img, "login_screen_1") and see(idx, img, "login_screen_2") and see(idx, img, "login_screen_3")
 
-for group in os.listdir(TEMPLATE_ROOT):
-    group_path = os.path.join(TEMPLATE_ROOT, group)
-    if not os.path.isdir(group_path):
-        continue
 
-    roi_json = os.path.join(group_path, "roi.json")
-    if not os.path.exists(roi_json):
-        continue
+def quest_panel_open(idx, img):
+    return see(idx, img, "openbangnhiemvu4")
 
-    x1, y1, x2, y2 = load_roi(roi_json)
-    roi_img = screen[y1:y2, x1:x2]
 
-    found, name, score = match_in_group(roi_img, group_path)
+def quest_completed(idx, img):
+    return see(idx, img, "claim_button") or see(idx, img, "complete_text")
 
-    if found:
-        print(f"[{group}] MATCH {name}  score={score:.4f}")
-        continue
 
-    # ===== Nhiệm vụ mới trong group này =====
-    next_id = get_next_index(group_path)
-    new_name = str(next_id)
+def detect_quest_type(idx, img):
+    if see(idx, img, "text_talk"):
+        return "TALK_NPC"
 
-    png_path = os.path.join(group_path, new_name + ".png")
-    json_path = os.path.join(group_path, new_name + ".json")
+    if see(idx, img, "text_fight"):
+        return "FIGHT"
 
-    cv2.imwrite(png_path, roi_img)
+    if see(idx, img, "text_collect"):
+        return "COLLECT"
 
-    # Lưu thêm json cùng tên
-    with open(json_path, "w") as f:
-        json.dump({
-            "x1": x1,
-            "y1": y1,
-            "x2": x2,
-            "y2": y2
-        }, f, indent=2)
+    if see(idx, img, "text_move"):
+        return "MOVE"
 
-    print(f"[{group}] NEW TEMPLATE → {new_name}")
+    return "UNKNOWN"
+
+
+# =========================
+# Ensure functions
+# =========================
+
+def ensure_game_running(idx, img):
+    if game_is_running(idx, img):
+        return True
+
+    press_f1(idx)
+    sleep(2)
+    img = get_screen_image(idx)
+    if see(idx, img, "startgame1"):
+        print("abc")
+        click(idx, img, "startgame1")
+    sleep(2)
+
+    return False
+
+
+def ensure_in_map(idx, img):
+    if in_map(idx, img):
+        return True
+
+    press_back(idx)
+    sleep(1)
+    return False
+
+
+def ensure_quest_panel_open(idx, img):
+    if quest_panel_open(idx, img):
+        return True
+
+    while True:
+        img = screenshot.screenshot(idx)
+        if click(idx,img,"openbangnhiemvu1"):
+            sleep(1)
+        if click(idx,img,"openbangnhiemvu2"):
+            sleep(1)
+        if click(idx,img,"openbangnhiemvu3"):
+            break
+        sleep(1)
+    return False
+
+
+# =========================
+# Action functions
+# =========================
+
+def claim_reward(idx, img):
+    if see(idx, img, "claim_button"):
+        click(idx, img, "claim_button")
+        sleep(1)
+        return True
+
+    return False
+
+
+def do_quest_by_type(idx, img, qtype):
+    if see(idx, img, "go_button"):
+        click(idx, img, "go_button")
+        sleep(1)
+        return True
+
+    if qtype == "TALK_NPC":
+        print("[QUEST] TALK_NPC")
+        return True
+
+    if qtype == "FIGHT":
+        print("[QUEST] FIGHT")
+        return True
+
+    if qtype == "COLLECT":
+        print("[QUEST] COLLECT")
+        return True
+
+    if qtype == "MOVE":
+        print("[QUEST] MOVE")
+        return True
+
+    print("[QUEST] UNKNOWN")
+    return False
+
+
+# =========================
+# Main loop
+# =========================
+
+def quest_master_loop(idx):
+    print("----- NEW LOOP -----")
+
+    img = get_screen_image2(idx)
+
+    if not ensure_game_running(idx, img):
+        print("[FLOW] waiting game open")
+        return
+
+    img = get_screen_image(idx)
+
+    if not ensure_in_map(idx, img):
+        print("[FLOW] returning to map")
+        return
+
+    img = get_screen_image(idx)
+
+    if not ensure_quest_panel_open(idx, img):
+        print("[FLOW] opening quest panel")
+        return
+
+    # img = get_screen_image(idx)
+    #
+    # if quest_completed(idx, img):
+    #     print("[FLOW] quest completed -> claim")
+    #     claim_reward(idx, img)
+    #     return
+    #
+    # qtype = detect_quest_type(idx, img)
+    # print(f"[FLOW] quest type = {qtype}")
+    #
+    # do_quest_by_type(idx, img, qtype)
+
+
+def main():
+    idx = 3
+
+    while True:
+        quest_master_loop(idx)
+        sleep(0.5)
+
+
+if __name__ == "__main__":
+    main()

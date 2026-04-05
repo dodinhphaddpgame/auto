@@ -159,11 +159,16 @@ def gethwnd(window_title, target="child"):
             raise Exception(f"Không tìm thấy parent window chứa: '{window_title}'")
         return parent_hwnd
 
-def screenshot(window_title, target):
-    # a = gethwnd(window_title=window_title, target=target)
+def screenshot(idx):
     # image = screenshot_window_by_hwnd(a)
     # image = screenshot_window_by_hwnd(gethwnd(window_title=window_title, target=target))  # img is BGR numpy array or None
-    return screenshot_window_by_hwnd(gethwnd(window_title=window_title, target=target))
+    return screenshot_window_by_hwnd(gethwnd(window_title=f"LDPlayer-{idx}", target="child"))
+
+def screenshot2(idx):
+    # image = screenshot_window_by_hwnd(a)
+    # image = screenshot_window_by_hwnd(gethwnd(window_title=window_title, target=target))  # img is BGR numpy array or None
+    return screenshot_window_by_hwnd(gethwnd(window_title=f"LDPlayer-{idx}", target="parent"))
+
 
 def find_template_on_screen(image, template_path, threshold=0.99, search_region=None):
     """
@@ -279,9 +284,8 @@ def find_template_on_screen_with_region(image, template_path, threshold=0.99):
         log_message.logg(f"Lỗi khi match template {os.path.basename(template_path)}: {e}")
         return (False, 0.0, None)
 
-def found_image_with_region(idx, img, template_path, target_hwnd, threshold=0.99):
+def found_image_with_region(idx, img, template_path, threshold=0.99):
     found, score, rect = find_template_on_screen_with_region(img, template_path, threshold)
-    print(found)
     if not found:
         log_message.logg(f"[LD {idx}] Không tìm thấy {template_path} (score={score:.3f})")
     return found
@@ -310,10 +314,12 @@ def click_if_found(idx, img, template_path, target_hwnd, threshold=0.99, search_
         log_message.logg(f"[LD {idx}] Không tìm thấy {template_path} (score={score:.3f})")
     return False
 
-def click_if_found_with_region(idx, img, template_path, target_hwnd, threshold=0.99):
+def click_if_found_with_region(idx, img, template_path, threshold=0.99):
     """
     Nếu template xuất hiện thì tap vào giữa template đó.
     """
+    target_hwnd = gethwnd(window_title = f"LDPlayer-{idx}", target = "child")
+
     found, score, rect = find_template_on_screen_with_region(img, template_path, threshold)
     if found and rect:
         x1, y1, x2, y2 = rect
