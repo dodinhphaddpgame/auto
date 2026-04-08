@@ -125,7 +125,6 @@ def ensure_in_map(idx, img):
     sleep(1)
     return False
 
-
 def ensure_quest_panel_open(idx, img):
     if quest_panel_open(idx, img):
         return True
